@@ -12,13 +12,13 @@ A lightweight, dependency-free demonstration of browser-based Text-to-Speech cap
 
 ## Demo
 
-[Live Demo](#) <!-- Add your deployed demo link here -->
+[Live Demo](https://steveseguin.github.io/basic-tts-test/) <!-- Add your deployed demo link here -->
 
 ## Getting Started
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/browser-tts-demo.git
+git clone https://github.com/steveseguin/basic-tts-test.git
 ```
 
 2. Open `index.html` in a modern web browser
