@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser TTS Demo</title>
+    <style>
+        :root {
+            --bg: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text: #e0e0e0;
+            --accent: #646cff;
+            --error: #ff4444;
+            --success: #00cc00;
+        }
+        
+        body { 
+            font-family: system-ui;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        h1 {
+            color: var(--accent);
+        }
+
+        select, textarea, button { 
+            display: block;
+            width: 100%;
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            color: var(--text);
+            border: 1px solid #404040;
+            border-radius: 4px;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        select:focus, textarea:focus {
+            outline: 1px solid var(--accent);
+        }
+
+        #error { 
+            color: var(--error);
+            margin: 1rem 0;
+            display: none;
+            padding: 0.75rem;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 4px;
+        }
+
+        #status { 
+            color: var(--success);
+            margin: 1rem 0;
+            display: none;
+            padding: 0.75rem;
+            background: rgba(0, 204, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        select option {
+            background: var(--bg-secondary);
+        }
+    </style>
+</head>
+<body>
+    <h1>Browser Text-to-Speech Demo</h1>
+    <p>Note: Available voices depend on your browser and system. Audio will play through your default audio output device.</p>
+
+    <select id="voices"></select>
+    <textarea rows="4" placeholder="Enter text to speak">Hello! This is a test of the browser's text to speech capabilities.</textarea>
+    <button onclick="speak()">Speak</button>
+    <div id="error"></div>
+    <div id="status"></div>
+
+    <script>
+        let synthesis = window.speechSynthesis;
+        let voices = [];
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function loadVoices() {
+            try {
+                voices = synthesis.getVoices();
+                const select = document.getElementById('voices');
+                select.innerHTML = '';
+                
+                voices.forEach((voice, i) => {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    select.appendChild(option);
+                });
+
+                if (voices.length === 0) {
+                    showError('No voices available in your browser');
+                } else {
+                    showStatus(`${voices.length} voices loaded`);
+                }
+            } catch (e) {
+                showError('Error loading voices: ' + e.message);
+            }
+        }
+
+        function speak() {
+            try {
+                if (!synthesis) {
+                    throw new Error('Speech synthesis not supported in this browser');
+                }
+
+                synthesis.cancel();
+                
+                const text = document.querySelector('textarea').value;
+                const voiceIndex = document.getElementById('voices').value;
+                
+                if (!text) {
+                    throw new Error('Please enter some text to speak');
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.voice = voices[voiceIndex];
+                
+                utterance.onend = () => showStatus('Speech completed');
+                utterance.onerror = (e) => showError('Speech error: ' + e.error);
+                
+                synthesis.speak(utterance);
+                showStatus('Speaking...');
+            } catch (e) {
+                showError(e.message);
+            }
+        }
+
+        if (synthesis) {
+            if (synthesis.onvoiceschanged !== undefined) {
+                synthesis.onvoiceschanged = loadVoices;
+            }
+            loadVoices();
+        } else {
+            showError('Speech synthesis not supported in this browser');
+        }
+    </script>
+</body>
+</html>
